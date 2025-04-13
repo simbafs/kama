@@ -9,7 +9,8 @@ import (
 )
 
 type Kama struct {
-	fs        fs.FS
+	static    fs.FS // the directory contain static files in production mode
+	fs        fs.FS // a overlay fs
 	path      string
 	devServer *url.URL
 }
@@ -18,8 +19,8 @@ type KamaOption func(*Kama)
 
 func New(f fs.FS, opts ...KamaOption) *Kama {
 	k := &Kama{
-		fs:   f,
-		path: "static",
+		static: f,
+		path:   "static",
 		devServer: &url.URL{
 			Scheme: "http",
 			Host:   "localhost:3001",
@@ -43,11 +44,23 @@ func (k *Kama) SetDevServer(devServer string) {
 	k.devServer = u
 }
 
-func (k *Kama) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	k.serveHTTP(w, r)
+func (k *Kama) prepareFS() {
+	var err error
+	k.fs, err = fs.Sub(k.static, k.path)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (k *Kama) Go() http.HandlerFunc {
+	k.prepareFS()
+	return func(w http.ResponseWriter, r *http.Request) {
+		k.serveHTTP(w, r)
+	}
 }
 
 func (k *Kama) Gin() gin.HandlerFunc {
+	k.prepareFS()
 	return func(c *gin.Context) {
 		k.serveHTTP(c.Writer, c.Request)
 	}

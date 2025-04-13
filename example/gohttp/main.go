@@ -20,7 +20,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"message": "Hello, world!"}`))
 	})
-	mux.Handle("/", k)
+	mux.HandleFunc("/", k.Go())
 
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
