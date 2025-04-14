@@ -4,14 +4,17 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"os"
 
+	"github.com/bep/overlayfs"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/afero"
 )
 
 type Kama struct {
-	static    fs.FS // the directory contain static files in production mode
-	fs        fs.FS // a overlay fs
-	path      string
+	static    fs.FS    // the directory contain static files in production mode
+	fs        afero.Fs // a overlay fs
+	path      string   // path to [static] directory
 	devServer *url.URL
 }
 
@@ -45,11 +48,15 @@ func (k *Kama) SetDevServer(devServer string) {
 }
 
 func (k *Kama) prepareFS() {
-	var err error
-	k.fs, err = fs.Sub(k.static, k.path)
+	A, err := fs.Sub(k.static, k.path)
 	if err != nil {
 		panic(err)
 	}
+
+	B := os.DirFS(k.path)
+	k.fs = overlayfs.New(overlayfs.Options{
+		Fss: []afero.Fs{afero.FromIOFS{FS: B}, afero.FromIOFS{FS: A}},
+	})
 }
 
 func (k *Kama) Go() http.HandlerFunc {
