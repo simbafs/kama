@@ -4,6 +4,8 @@ package kama
 
 import (
 	"net/http"
+
+	"github.com/simbafs/kama/httpfs"
 )
 
 // func tree(fs afero.Fs, w io.Writer) {
@@ -29,5 +31,5 @@ func (k *Kama) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	http.FileServer(NewHTTPFs(k.fs)).ServeHTTP(w, r)
+	http.FileServer(httpfs.NewHTTPFs(k.fs)).ServeHTTP(w, r)
 }
