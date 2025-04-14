@@ -35,16 +35,20 @@ func New(f fs.FS, opts ...KamaOption) *Kama {
 	return k
 }
 
-func (k *Kama) SetPath(path string) {
-	k.path = path
+func WithPath(path string) KamaOption {
+	return func(k *Kama) {
+		k.path = path
+	}
 }
 
-func (k *Kama) SetDevServer(devServer string) {
-	u, err := url.Parse(devServer)
-	if err != nil {
-		panic(err)
+func WithDevServer(devServer string) KamaOption {
+	return func(k *Kama) {
+		u, err := url.Parse(devServer)
+		if err != nil {
+			panic(err)
+		}
+		k.devServer = u
 	}
-	k.devServer = u
 }
 
 func (k *Kama) prepareFS() {

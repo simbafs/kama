@@ -11,7 +11,8 @@ In practice, I supose you to write a Makefile or shell script to help you. In de
 
 # overlay fs
 
-The `static` directory in the current working directory will overlay the embedded filesystem, allowing you to overwrite any static file without recompiling.
+The `kama.path`(configurable via `WithPath("static")` when calling `kama.New`) directory in the current working directory will overlay the embedded filesystem, allowing you to overwrite any static file without recompiling.
+
 
 # Example
 
