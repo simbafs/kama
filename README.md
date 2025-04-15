@@ -38,7 +38,7 @@ kama.New(embeddedFS,
 
 # Usage
 
-See the [\_example/](./_example/) directory for complete usage examples with both `net/http` and `gin`.
+See the [\_example/](./_example/) directory for simple examples. There is a complete example [counter](https://github.com/simbafs/counter)
 
 # License
 

@@ -38,7 +38,7 @@ kama.New(embeddedFS,
 
 # 使用方式
 
-請參考 [\_example/](./_example/) 資料夾中的完整範例。
+請參考 [\_example/](./_example/) 資料夾中的範例。完整範例請參考 [counter](https://github.com/simbafs/counter)
 
 # License
 
