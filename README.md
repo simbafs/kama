@@ -1,19 +1,45 @@
 # kama
 
-> kam-á 橘子的臺語  
+> /kam-á/  
+> 橘子的臺語  
 > Tangerine in Taiwanese Hokkien
 
-This package is designed for building applications with a separated frontend and backend using Go.
-In development mode, all unhandled requests are redirected to a frontend development server (such as Next.js or Astro).
-In production mode, all files in the specified directory are embedded into the output binary using Go's `embed` feature, allowing you to deploy the entire application as a single executable.
+[中文版](./README-zh.md)
 
-In practice, I supose you to write a Makefile or shell script to help you. In development mode, it start and watch frontend dev server and backend server. When you need to build in production mode, it builds frontend and move files to the specified directory in backend and run `go buil -tags prod`.
+**Kama** is a lightweight Go package for building **frontend-backend separated web applications**.
 
-# overlay fs
+In development mode, it proxies all unmatched HTTP requests to a frontend dev server (e.g. Vite, Next.js).  
+In production mode, it serves static files from an embedded filesystem, with optional overrides from a local directory—no recompilation required.
 
-The `kama.path`(configurable via `WithPath("static")` when calling `kama.New`) directory in the current working directory will overlay the embedded filesystem, allowing you to overwrite any static file without recompiling.
+## Features
 
+- Supports both `net/http` and `gin` framework
+- Proxies requests to a frontend dev server during development
+- Serves static files via `embed.FS` in production
+- Allows local static file override on top of embedded files
 
-# Example
+## Installation
 
-See [example](./example/README.md)
+```bash
+go get github.com/simbafs/kama
+```
+
+# Quick Overview
+
+```go
+//go:embed all:static
+var embededFS embed.FS
+
+kama.New(embeddedFS,
+  kama.WithDevServer("http://localhost:3001"),
+  kama.WithPath("static"),
+)
+```
+
+# Usage
+
+See the [\_example/](./_example/) directory for complete usage examples with both `net/http` and `gin`.
+
+# License
+
+[MIT](./LICENSE)
