@@ -1,3 +1,7 @@
+// This package provides HTTP server handlers for serving static files.
+// In development mode, it proxies requests to a frontend development server.
+// In production mode, it serves files from the embedded filesystem,
+// with optional overrides from a local directory in the current working directory.
 package kama
 
 import (
@@ -20,6 +24,7 @@ type Kama struct {
 
 type KamaOption func(*Kama)
 
+// New creates a new Kama instance
 func New(f fs.FS, opts ...KamaOption) *Kama {
 	k := &Kama{
 		static: f,
@@ -35,12 +40,14 @@ func New(f fs.FS, opts ...KamaOption) *Kama {
 	return k
 }
 
+// WithPath sets the path to the static directory (default is "static")
 func WithPath(path string) KamaOption {
 	return func(k *Kama) {
 		k.path = path
 	}
 }
 
+// WithDevServer sets the dev server URL (default is http://localhost:3001)
 func WithDevServer(devServer string) KamaOption {
 	return func(k *Kama) {
 		u, err := url.Parse(devServer)
@@ -63,6 +70,7 @@ func (k *Kama) prepareFS() {
 	})
 }
 
+// Go returns a http.HandlerFunc for http mux in standard library
 func (k *Kama) Go() http.HandlerFunc {
 	k.prepareFS()
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +78,7 @@ func (k *Kama) Go() http.HandlerFunc {
 	}
 }
 
+// Gin returns a gin.HandlerFunc for gin
 func (k *Kama) Gin() gin.HandlerFunc {
 	k.prepareFS()
 	return func(c *gin.Context) {
