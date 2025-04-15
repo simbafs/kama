@@ -14,7 +14,7 @@ var static embed.FS
 func main() {
 	mux := http.NewServeMux()
 
-	k := kama.New(static)
+	k := kama.New(static, kama.WithTree("/tree"))
 
 	mux.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

@@ -14,7 +14,7 @@ var static embed.FS
 func main() {
 	r := gin.Default()
 
-	k := kama.New(static)
+	k := kama.New(static, kama.WithTree("/tree"))
 
 	r.GET("/api", func(c *gin.Context) {
 		c.JSON(200, gin.H{

@@ -20,6 +20,7 @@ type Kama struct {
 	fs        afero.Fs // a overlay fs
 	path      string   // path to [static] directory
 	devServer *url.URL
+	tree      string
 }
 
 type KamaOption func(*Kama)
@@ -55,6 +56,13 @@ func WithDevServer(devServer string) KamaOption {
 			panic(err)
 		}
 		k.devServer = u
+	}
+}
+
+// WithTree enable a endpoint to show the tree of filesystem
+func WithTree(tree string) KamaOption {
+	return func(k *Kama) {
+		k.tree = tree
 	}
 }
 
