@@ -91,5 +91,6 @@ func (k *Kama) Gin() gin.HandlerFunc {
 	k.prepareFS()
 	return func(c *gin.Context) {
 		k.serveHTTP(c.Writer, c.Request)
+		c.Abort()
 	}
 }
