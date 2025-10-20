@@ -14,7 +14,7 @@ var static embed.FS
 func main() {
 	r := gin.Default()
 
-	k := kama.New(static, kama.WithTree("/tree"))
+	k, _ := kama.New(static, "http://localhost:3001", kama.WithTree("/tree"), kama.WithOverlayPath("overlay"))
 
 	r.GET("/api", func(c *gin.Context) {
 		c.JSON(200, gin.H{

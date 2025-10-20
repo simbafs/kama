@@ -1,7 +1,6 @@
-// This package provides HTTP server handlers for serving static files.
-// In development mode, it proxies requests to a frontend development server.
-// In production mode, it serves files from the embedded filesystem,
-// with optional overrides from a local directory in the current working directory.
+// Package kama handle serving static file in proudction mode and development mode
+// In production mode, it serves the static files from the embedded and overlay filesystem
+// In development mode, it proxies the requests to the development server(e.g. Vite, Next.js dev server)
 package kama
 
 import (
@@ -16,65 +15,97 @@ import (
 )
 
 type Kama struct {
-	static    fs.FS    // the directory contain static files in production mode
-	fs        afero.Fs // a overlay fs
-	path      string   // path to [static] directory
-	devServer *url.URL
-	tree      string
+	static      fs.FS    // the directory contain static files in production mode
+	staticPath  string   // path to static directory, see [WithPath] below
+	overlayPath string   // path to overlay directory in current working directory
+	fs          afero.Fs // a overlay fs
+	devServer   *url.URL
+	tree        string
 }
 
-type KamaOption func(*Kama)
+type KamaOption func(*Kama) error
 
 // New creates a new Kama instance
-func New(f fs.FS, opts ...KamaOption) *Kama {
+func New(f fs.FS, devServer string, opts ...KamaOption) (*Kama, error) {
+	dev, err := url.Parse(devServer)
+	if err != nil {
+		return nil, err
+	}
+
 	k := &Kama{
-		static: f,
-		path:   "static",
-		devServer: &url.URL{
-			Scheme: "http",
-			Host:   "localhost:3001",
-		},
+		static:     f,
+		staticPath: "static",
+		devServer:  dev,
 	}
 	for _, opt := range opts {
-		opt(k)
-	}
-	return k
-}
-
-// WithPath sets the path to the static directory (default is "static")
-func WithPath(path string) KamaOption {
-	return func(k *Kama) {
-		k.path = path
-	}
-}
-
-// WithDevServer sets the dev server URL (default is http://localhost:3001)
-func WithDevServer(devServer string) KamaOption {
-	return func(k *Kama) {
-		u, err := url.Parse(devServer)
-		if err != nil {
-			panic(err)
+		if err := opt(k); err != nil {
+			return nil, err
 		}
-		k.devServer = u
+	}
+	return k, nil
+}
+
+// WithStaticPath sets the path to the static directory relative to the current working directory
+// This option is used to remove the directory nesting if needed.
+// For example, if you load the embed fs like this
+//
+//	//go:embed all:fromtend
+//	//var staticFS embed.FS
+//
+// The strucuture of the staticFS look like this:
+//
+//	static
+//	 ├── index.html
+//	 └── style.css
+//
+// With this option, it will be possible to serve the files correctly by setting the path to "frontend"
+//
+//	/ -> frontend/index.html
+//	/style.css -> fromtend/style.css
+//
+// If not set, it will be
+//
+//	/static -> frontend/index.html
+//	/static/style.css -> fromtend/style.css
+func WithStaticPath(path string) KamaOption {
+	return func(k *Kama) error {
+		k.staticPath = path
+		return nil
+	}
+}
+
+// WithOverlayPath sets the path to the overlay directory in the current working directory
+// This directory is prioritized over the embedded static files.
+func WithOverlayPath(path string) KamaOption {
+	return func(k *Kama) error {
+		k.overlayPath = path
+		return nil
 	}
 }
 
 // WithTree enable a endpoint to show the tree of filesystem
+// This is useful to inspect if the [WithOverlayPath] is working correctly
 func WithTree(tree string) KamaOption {
-	return func(k *Kama) {
+	return func(k *Kama) error {
 		k.tree = tree
+		return nil
 	}
 }
 
 func (k *Kama) prepareFS() {
-	A, err := fs.Sub(k.static, k.path)
+	embed, err := fs.Sub(k.static, k.staticPath)
 	if err != nil {
 		panic(err)
 	}
 
-	B := os.DirFS(k.path)
+	if k.overlayPath == "" {
+		k.fs = afero.FromIOFS{FS: embed}
+		return
+	}
+
+	overlay := os.DirFS(k.overlayPath)
 	k.fs = overlayfs.New(overlayfs.Options{
-		Fss: []afero.Fs{afero.FromIOFS{FS: B}, afero.FromIOFS{FS: A}},
+		Fss: []afero.Fs{afero.FromIOFS{FS: overlay}, afero.FromIOFS{FS: embed}},
 	})
 }
 

@@ -14,7 +14,7 @@ var static embed.FS
 func main() {
 	mux := http.NewServeMux()
 
-	k := kama.New(static, kama.WithTree("/tree"))
+	k, _ := kama.New(static, "http://localhost:3001", kama.WithTree("/tree"), kama.WithOverlayPath("overlay"))
 
 	mux.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
