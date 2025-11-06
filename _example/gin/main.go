@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/simbafs/kama"
+	"github.com/simbafs/kama/v2"
 )
 
 //go:embed all:static

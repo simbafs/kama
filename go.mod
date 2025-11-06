@@ -1,4 +1,4 @@
-module github.com/simbafs/kama
+module github.com/simbafs/kama/v2
 
 go 1.24.2
 

@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/simbafs/kama/httpfs"
+	"github.com/simbafs/kama/v2/httpfs"
 	"github.com/spf13/afero"
 )
 

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/simbafs/kama"
+	"github.com/simbafs/kama/v2"
 )
 
 //go:embed all:static
